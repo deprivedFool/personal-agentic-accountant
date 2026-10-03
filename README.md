@@ -26,6 +26,31 @@ answer the questions and give `examples/sample-household` when asked for documen
 
 ## What happens
 
+**With a model connected, the model runs the interview.** After your country and goals it decides
+what it actually needs: it reads what you've already given, asks one question at a time and says
+why, asks for a specific document when that's the most reliable source (and where to get it), and
+stops as soon as more answers wouldn't change the advice. Skipped questions are never asked again;
+type `done` any time to start with what you've given.
+
+```
+• Could you share your Banco de Portugal credit map (Mapa de Responsabilidades de Crédito)?
+  Why: It lists every loan and card in your name, so the payoff plan misses nothing.
+  > ~/Downloads/mapa_responsabilidades.pdf
+  Added: mapa_responsabilidades.pdf
+
+• What is your monthly take-home pay, and is it paid 12 or 14 times a year?
+  Why: The payoff plan depends on what's left each month.
+  > 1582 net, 14 payments
+
+What I understand so far:
+  • Single employee, 1,582 EUR net x14, mortgage + car loan + credit card
+Still unknown (the team will state its assumptions):
+  • Credit card interest rate
+```
+
+**Offline (no model), it follows the country pack's checklist** for your goals, shown below.
+The same checklist is the fallback if the model can't run the interview.
+
 ```
 1. Where are you tax resident? [Portugal]:
 2. What do you want to achieve?            > Pay off my debts faster
@@ -57,9 +82,8 @@ wealth; the CFO combines everything into one plan.
 Start?  [Enter] yes   [1] CFO only   [e] pick specialists   [q] quit:
 ```
 
-- **It asks for what your goals need.** The document checklist comes from the country pack, and
-  each item says where to get it and why it matters. Every document is optional, and you can type
-  the key figures instead.
+- **It asks for what your goals need**, and says where to get each document and why it matters.
+  Every document is optional, and you can type the key figures instead.
 - **It decides how big the team should be.** A single focused question goes to the CFO alone; broader goals get
   the relevant specialists, a bookkeeper when there are documents, and the CFO last.
 - **It suggests, it doesn't insist.** If your team choice leaves a goal uncovered, it says so once;
@@ -83,6 +107,15 @@ Start?  [Enter] yes   [1] CFO only   [e] pick specialists   [q] quit:
 
 All tools are plain Python in `plugins/`, covered by tests against published tables and hand calculations.
 
+### Verified figures vs live lookups
+
+Calculation-critical figures (tax brackets, deductions, IMT tables...) live in the country pack:
+versioned, sourced, dated and tested, because a model's memory of last year's table produces
+confident wrong numbers. For a rule the pack doesn't cover, agents can read an official page with
+`fetch_official_page` (Portal das Finanças, Segurança Social, Banco de Portugal, Diário da República,
+and other government domains). Anything found that way is labelled **UNVERIFIED (source, date)** in
+the report and kept apart from the verified figures.
+
 ## Privacy
 
 - Documents are read **on your machine**. Bank statements are parsed and summarised locally.
@@ -92,6 +125,7 @@ All tools are plain Python in `plugins/`, covered by tests against published tab
 - What is sent goes to the model provider you choose. To keep everything local, use a local model:
   `python start.py --model ollama_chat/llama3.1` (needs [Ollama](https://ollama.com) and a model with tool support).
 - Each engagement is saved in `workspaces/` (git-ignored). Delete it when you're done.
+- Official-page lookups are plain HTTPS requests from your machine to the official site; your data is not sent.
 
 ## Re-running and updating
 
@@ -120,6 +154,7 @@ See [docs/adding-a-country.md](docs/adding-a-country.md).
 start.py                guided intake (main entry point)
 run.py                  re-run a saved engagement
 cfo/
+  interviewer.py        model-driven intake: decides what to ask next, one question at a time
   planner.py            goals -> domains -> documents needed -> team; payload and config
   team.py               the specialist roles and their shared rules
   documents.py          read PDF/Excel/CSV/text, classify against the checklist, redact identifiers
@@ -129,6 +164,7 @@ plugins/
   finance_tools.py      loans, debt payoff, savings, goals, emergency fund, sinking fund, budget, net worth, retirement, cash flow
   tax_tools.py          pack-driven income tax, net salary, capital income, property purchase, PPR benefit, facts lookup
   statement_tools.py    transaction categorisation for agents
+  research_tools.py     fetch_official_page: live lookups on official sites, labelled UNVERIFIED
   general_tools.py      calculator, regex
 core/                   multi-agent engine (from agentic-canvas): agents, orchestrator, model clients, runner
 jurisdictions/          country packs

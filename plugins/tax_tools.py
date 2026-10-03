@@ -446,8 +446,11 @@ def jurisdiction_facts(topic: str) -> Dict[str, Any]:
         "reference_values": _PACK.get("reference_values"),
         "sources": _PACK.get("sources"),
     }
-    if topic == "all_topics" or topic not in lookup:
-        return {"topics": [k for k, v in lookup.items() if v], **_meta()}
+    if topic == "all_topics" or topic not in lookup or not lookup[topic]:
+        return {"topics": [k for k, v in lookup.items() if v],
+                "not_covered": None if topic == "all_topics" else topic,
+                "if_not_covered": "Use fetch_official_page on an official source and label the result UNVERIFIED.",
+                "official_sources": _PACK.get("official_sources", []), **_meta()}
     return {"topic": topic, "facts": lookup[topic], **_meta()}
 
 

@@ -15,8 +15,12 @@ A country pack is one YAML file: `jurisdictions/<code>/pack.yaml`. Start from
 | `capital_income` | capital_income_tax | for tax figures |
 | `property` | property_purchase_costs | optional |
 | `banking`, `salary`, `retirement`, `calendar` | jurisdiction_facts | optional |
+| `official_sources` | fetch_official_page allowlist (government domains are always allowed) | recommended |
 
 Without `income_tax`, tax tools return `available: false` and agents label tax reasoning as indicative.
+
+The document checklist drives the offline intake and is a reference for the model interviewer, which
+may adapt it to the user's situation.
 
 ## Document checklist entries
 

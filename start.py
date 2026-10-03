@@ -26,6 +26,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import yaml
 
 from cfo.documents import Document, classify, collect_files, read_file
+from cfo.interviewer import Interviewer
 from cfo.jurisdictions import available_packs, documents_for, has_tax_tables, load_pack, resolve_code
 from cfo.planner import (
     Intake,
@@ -173,10 +174,14 @@ def ask_profile(console: Console, pack: Dict[str, Any]) -> Tuple[Dict[str, Any],
                           {"1": "low", "2": "medium", "3": "high"})
     if risk:
         profile["risk_tolerance"] = risk
+    return profile, ask_language(console)
+
+
+def ask_language(console: Console) -> str:
     language = console.ask("  Report language [English]: ") or "English"
     if language.lower() in {"pt", "pt-pt", "portugues", "português", "portuguese"}:
         language = "Portuguese (Portugal)"
-    return profile, language
+    return language
 
 
 def _load(paths_text: str, console: Console, catalog: List[Dict[str, Any]], forced_type: Optional[str] = None) -> Optional[List[Document]]:
@@ -206,19 +211,20 @@ def _looks_like_path(text: str) -> bool:
     return "/" in text or "\\" in text or Path(text.split(",")[0].strip()).suffix != ""
 
 
-def ask_documents(console: Console, intake: Intake, catalog: List[Dict[str, Any]]) -> None:
+def ask_folder(console: Console, intake: Intake, catalog: List[Dict[str, Any]], then: str) -> None:
+    """Optional upload of everything at once; ``then`` says what happens if the user presses Enter."""
     names = {d["id"]: d["name"] for d in catalog}
     console.say("\n3. Your documents. They stay on this computer; identifiers (tax numbers, IBANs, cards) are masked")
     console.say("   before anything is sent to the model.")
     console.say("   Fastest: give me ONE folder with all your financial documents (PDF, CSV, Excel, text), or several")
-    console.say("   paths separated by commas. Or press Enter to go through the list one by one.")
+    console.say(f"   paths separated by commas. Or press Enter to {then}.")
     while True:
         answer = console.ask("> ")
         if answer.lower() in SKIP:
             break
         docs = _load(answer, console, catalog)
         if docs is None:
-            console.say("  I couldn't find that path. Try again, or press Enter to go one by one.")
+            console.say(f"  I couldn't find that path. Try again, or press Enter to {then}.")
             continue
         intake.documents.extend(docs)
         break
@@ -230,6 +236,15 @@ def ask_documents(console: Console, intake: Intake, catalog: List[Dict[str, Any]
         for type_name, files in by_type.items():
             console.say(f"   • {type_name}: {', '.join(files)}")
 
+
+def ask_documents(console: Console, intake: Intake, catalog: List[Dict[str, Any]]) -> None:
+    """Fixed-checklist intake (offline mode, or when the model interviewer is unavailable)."""
+    ask_folder(console, intake, catalog, then="go through the list one by one")
+    ask_checklist(console, intake, catalog)
+
+
+def ask_checklist(console: Console, intake: Intake, catalog: List[Dict[str, Any]]) -> None:
+    names = {d["id"]: d["name"] for d in catalog}
     domains = detect_domains(intake.goals_text)
     groups = relevant_documents(catalog, domains)
     missing = [d for d in groups["essential"] if d["id"] not in intake.provided_types()]
@@ -270,6 +285,62 @@ def ask_documents(console: Console, intake: Intake, catalog: List[Dict[str, Any]
                 continue
             intake.documents.extend(docs)
             console.say(f"  Added {len(docs)} file(s): {', '.join(names.get(d.doc_type or '', 'other') for d in docs)}.")
+
+
+DONE_WORDS = {"done", "start", "stop", "go", "feito", "começar", "comecar"}
+
+
+def _answer_with_files(console: Console, answer: str, intake: Intake, catalog: List[Dict[str, Any]]) -> Tuple[str, str]:
+    """Interpret an interview answer. Returns (kind, value): kind is 'files', 'skipped' or 'text'."""
+    while _looks_like_path(answer):
+        docs = _load(answer, console, catalog)
+        if docs:
+            intake.documents.extend(docs)
+            console.say(f"  Added: {', '.join(d.name for d in docs)}")
+            return "files", f"(provided: {', '.join(d.name for d in docs)})"
+        answer = console.ask("  I couldn't find that file. Path again, the figures, or Enter to skip: ")
+        if answer.lower() in SKIP:
+            return "skipped", "(skipped)"
+    return "text", answer
+
+
+def interview(console: Console, intake: Intake, catalog: List[Dict[str, Any]], interviewer: Interviewer) -> None:
+    """Model-driven questions, one at a time; falls back to the checklist if the model fails."""
+    console.say("\nI'll ask only what matters for your goals, one question at a time.")
+    console.say("Answer with a file/folder path or in your own words. Enter skips a question; 'done' starts with what you've given.")
+    while True:
+        step = interviewer.next_step(intake)
+        if step is None:
+            console.say("\n(The model couldn't run the interview, so here is the standard checklist.)")
+            ask_checklist(console, intake, catalog)
+            show_coverage(console, intake, catalog)
+            return
+        if step.done:
+            intake.interview_summary = {"understanding": step.understanding, "gaps": step.gaps}
+            if step.understanding:
+                console.say("\nWhat I understand so far:")
+                for line in step.understanding:
+                    console.say(f"  • {line}")
+            if step.gaps:
+                console.say("Still unknown (the team will state its assumptions):")
+                for line in step.gaps:
+                    console.say(f"  • {line}")
+            return
+        console.say(f"\n• {step.question}")
+        if step.why:
+            console.say(f"  Why: {step.why}")
+        answer = console.ask("  > ")
+        if answer.lower() in DONE_WORDS:
+            interviewer.record(step, "(client chose to start now)")
+            console.say("Okay, starting with what we have.")
+            return
+        if answer.lower() in SKIP:
+            interviewer.record(step, "(skipped)")
+            continue
+        kind, value = _answer_with_files(console, answer, intake, catalog)
+        if kind == "text":
+            intake.facts[step.label] = value
+        interviewer.record(step, value)
 
 
 def show_coverage(console: Console, intake: Intake, catalog: List[Dict[str, Any]]) -> None:
@@ -363,7 +434,7 @@ def run_and_report(console: Console, folder: Path, config: Dict[str, Any], paylo
 
 def guided_intake(console: Console, model_override: Optional[str], workspace_root: Path, redact_ids: bool = True) -> int:
     console.say("Personal CFO: guided intake")
-    console.say("I'll ask what you want to achieve, a few facts, and for the documents that matter. Only your goals")
+    console.say("I'll ask what you want to achieve and then only for what matters for it. Only your goals")
     console.say("are required; press Enter to skip anything else.\n")
     model, note = detect_model(model_override)
     console.say(note + "\n")
@@ -371,20 +442,27 @@ def guided_intake(console: Console, model_override: Optional[str], workspace_roo
     code, pack = ask_country(console)
     catalog = documents_for(pack)
     goals = ask_goals(console)
-    profile, language = ask_profile(console, pack)
-    intake = Intake(country_code=code, goals=goals, profile=profile, language=language)
-    ask_documents(console, intake, catalog)
-    show_coverage(console, intake, catalog)
 
-    planner = heuristic_team if model["provider"] == "mock" else None
-    if planner is None:
+    llm = None
+    if model["provider"] != "mock":
         try:
-            team = LLMTeamPlanner(create_llm_client(model)).plan(intake)
+            llm = create_llm_client(model)
         except ImportError as exc:
-            console.say(f"{exc}. Using the built-in planner.")
-            team = heuristic_team(intake)
+            console.say(f"{exc}. Using the standard questions and checklist.")
+
+    if llm is not None:
+        # The model decides what to ask; only the language is asked up front (questions use it).
+        console.say("")
+        intake = Intake(country_code=code, goals=goals, language=ask_language(console))
+        ask_folder(console, intake, catalog, then="answer a few questions instead")
+        interview(console, intake, catalog, Interviewer(llm, pack, intake.language))
+        team = LLMTeamPlanner(llm).plan(intake)
     else:
-        team = planner(intake)
+        profile, language = ask_profile(console, pack)
+        intake = Intake(country_code=code, goals=goals, profile=profile, language=language)
+        ask_documents(console, intake, catalog)
+        show_coverage(console, intake, catalog)
+        team = heuristic_team(intake)
     describe_team(console, team)
     team = choose_team(console, intake, team)
 

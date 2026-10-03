@@ -12,8 +12,9 @@ COMMON_RULES = """
 Rules:
 - Jurisdiction: {country} ({tax_year} rules, verified {verified}). Use the tools for EVERY number:
   tax, loans, projections, budgets. Never do arithmetic in your head; if no tool fits, use calculator.
-- Look up country facts with jurisdiction_facts instead of recalling them. If something isn't in the
-  pack, say it is unverified.
+- Look up country facts with jurisdiction_facts instead of recalling them. If a rule you need isn't in
+  the pack, you may read an official source with fetch_official_page; label anything found that way
+  "UNVERIFIED (source, date)", keep it apart from the verified figures, and never guess instead.
 - Work only from the documents, the user's facts and earlier agents' outputs. Never invent figures.
   When something is missing, state the assumption you make and how much it matters.
 - If the user's own plan or preference is not the best option, say so plainly and show why with numbers,
@@ -58,7 +59,7 @@ ROLES: Dict[str, Role] = {r.id: r for r in (
         'Respond with JSON: {"current_estimate": {...}, "opportunities": [{"action", "saving_per_year", "effort", "deadline"}], '
         '"filing_choices": [...], "deadlines": [...], "warnings": [...]}.',
         ("estimate_income_tax", "estimate_net_salary", "retirement_savings_benefit", "capital_income_tax",
-         "jurisdiction_facts", "calculator"),
+         "jurisdiction_facts", "fetch_official_page", "calculator"),
     ),
     Role(
         "cash_flow_controller", "Cash-flow controller", "builds your budget, sinking fund and emergency fund",
@@ -82,7 +83,7 @@ ROLES: Dict[str, Role] = {r.id: r for r in (
         "and expected lump sums, and test single prepayments with early_repayment_analysis.\n"
         'Respond with JSON: {"debts_ranked": [...], "strategy": "...", "payoff_dates": {...}, "interest_saved": number, '
         '"monthly_actions": [...], "lump_sum_rules": [...], "warnings": [...]}.',
-        ("debt_payoff_plan", "early_repayment_analysis", "loan_payment", "jurisdiction_facts", "calculator"),
+        ("debt_payoff_plan", "early_repayment_analysis", "loan_payment", "jurisdiction_facts", "fetch_official_page", "calculator"),
     ),
     Role(
         "property_advisor", "Property advisor", "handles buy-vs-rent, mortgages and purchase costs",
@@ -93,7 +94,7 @@ ROLES: Dict[str, Role] = {r.id: r for r in (
         "buy vs rent, and mortgage prepayment (early_repayment_analysis).\n"
         'Respond with JSON: {"affordability": {...}, "purchase_costs": {...}, "deposit_plan": {...}, "recommendation": "...", "risks": [...]}.',
         ("property_purchase_costs", "loan_payment", "early_repayment_analysis", "goal_planner", "budget_analysis",
-         "jurisdiction_facts", "calculator"),
+         "jurisdiction_facts", "fetch_official_page", "calculator"),
     ),
     Role(
         "wealth_advisor", "Wealth advisor", "decides where spare money goes and projects goals and retirement",
@@ -106,7 +107,7 @@ ROLES: Dict[str, Role] = {r.id: r for r in (
         'Respond with JSON: {"order_of_operations": [...], "allocation": {...}, "projections": {...}, "goal_plans": [...], '
         '"retirement": {...}, "risks": [...]}.',
         ("investment_options", "savings_projection", "goal_planner", "retirement_projection", "capital_income_tax",
-         "retirement_savings_benefit", "jurisdiction_facts", "calculator"),
+         "retirement_savings_benefit", "jurisdiction_facts", "fetch_official_page", "calculator"),
     ),
     Role(
         "protection_advisor", "Protection advisor", "checks insurance gaps, overlaps and estate basics",
@@ -132,7 +133,7 @@ ROLES: Dict[str, Role] = {r.id: r for r in (
         "5. Risks, assumptions and what would sharpen the plan (missing documents).\n"
         "6. When to consult a professional.\n"
         "Double-check any number you introduce with the tools.",
-        ("calculator", "goal_planner", "cash_flow_projection", "jurisdiction_facts"),
+        ("calculator", "goal_planner", "cash_flow_projection", "jurisdiction_facts", "fetch_official_page"),
     ),
 )}
 

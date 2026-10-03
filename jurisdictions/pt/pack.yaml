@@ -27,6 +27,22 @@ sources:
   - "IMT 2026 young buyers: https://www.doutorfinancas.pt/impostos/escaloes-do-imt-sobem-2-em-2026-e-jovens-ficam-isentos-ate-330-539-euros/"
   - "IFICI: https://www.pwc.pt/pt/pwcinforfisco/guia-fiscal/2026/irs.html"
 
+# Official sites agents may read with fetch_official_page (results are labelled UNVERIFIED).
+official_sources:
+  - portaldasfinancas.gov.pt
+  - info.portaldasfinancas.gov.pt
+  - seg-social.pt
+  - bportugal.pt
+  - clientebancario.bportugal.pt
+  - diariodarepublica.pt
+  - dre.pt
+  - igcp.pt
+  - gov.pt
+  - portugal.gov.pt
+  - eportugal.gov.pt
+  - cmvm.pt
+  - asf.com.pt
+
 reference_values:
   ias: 537.13                 # Indexante dos Apoios Sociais 2026
   minimum_wage_monthly: 920   # Retribuição mínima mensal garantida 2026

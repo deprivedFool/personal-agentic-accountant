@@ -64,6 +64,7 @@ class Intake:
     documents: List[Document] = field(default_factory=list)
     facts: Dict[str, str] = field(default_factory=dict)  # checklist id -> what the user typed instead of a document
     language: str = "English"
+    interview_summary: Dict[str, Any] = field(default_factory=dict)  # model's understanding and open gaps
 
     @property
     def goals_text(self) -> str:
@@ -239,6 +240,8 @@ def build_payload(intake: Intake, pack: Dict[str, Any], catalog: List[Dict[str, 
         "documents": documents,
         "coverage": coverage(intake, catalog, domains),
     }
+    if intake.interview_summary:
+        payload["intake_interview"] = intake.interview_summary
     if all_transactions:
         payload["all_statements_summary"] = summarize(all_transactions, rules)
     if redact_ids:
@@ -267,6 +270,7 @@ def build_config(team: TeamPlan, intake: Intake, pack: Dict[str, Any], model: Di
             "plugins.finance_tools",
             {"module": "plugins.tax_tools", "settings": {"jurisdiction": pack.get("code", "generic")}},
             "plugins.statement_tools",
+            "plugins.research_tools",
         ],
         "agents": agents,
     }
