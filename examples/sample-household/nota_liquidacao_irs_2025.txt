@@ -1,0 +1,10 @@
+AUTORIDADE TRIBUTÁRIA E ADUANEIRA - Demonstração de Liquidação de IRS - Ano 2025
+Sujeito passivo A: NIF 123456789   Tributação: separada   Dependentes: 0
+Rendimento global (Cat. A) ............. 29.400,00
+Dedução específica ..................... 4.462,15
+Rendimento coletável ................... 24.937,85
+Coleta total ........................... 4.811,02
+Deduções à coleta ...................... 610,00
+Coleta líquida ......................... 4.201,02
+Retenções na fonte ..................... 4.050,00
+Valor a pagar .......................... 151,02

@@ -1,0 +1,451 @@
+# Jurisdiction pack: Portugal (mainland), tax year 2026.
+#
+# Every number the tools use for Portugal lives here, so the code stays country-agnostic.
+# Figures change with each State Budget (Orçamento do Estado). When updating:
+#   1. change the values, 2. update `verified` and `sources`, 3. run the tests.
+
+country: Portugal
+code: pt
+currency: EUR
+language_terms: pt
+tax_year: 2026
+verified: "2026-10-03"
+disclaimer: >-
+  Estimates based on Portuguese rules for 2026 as published at the verification date. They
+  simplify some rules (e.g. withholding tables, special regimes, regional rates). Confirm
+  important decisions with the Portal das Finanças simulators or a certified accountant
+  (contabilista certificado).
+sources:
+  - "IRS 2026 brackets: https://contasconnosco.cofidis.pt/impostos/escaloes-irs"
+  - "IRS 2026 brackets: https://www.cgd.pt/Site/Saldo-Positivo/leis-e-impostos/Pages/novidades-IRS.aspx"
+  - "Specific deduction, minimum income, dependants: https://www.pwc.pt/pt/pwcinforfisco/guia-fiscal/2026/irs.html"
+  - "IRS Jovem 2026 (55 x IAS 537.13): https://www.deco.proteste.pt/dinheiro/impostos/dicas/irs-jovem-como-funciona"
+  - "PPR deduction caps: https://www.santander.pt/salto/ppr-irs"
+  - "Rent deduction 900 EUR (rents paid in 2026): https://www.deco.proteste.pt/dinheiro/arrendamento/noticias/deducao-rendas-irs-sobe-900-euros-2026"
+  - "Deductions and global cap: https://www.montepio.org/ei/pessoal/impostos/deducoes-a-coleta-saiba-quanto-pode-descontar-no-irs/"
+  - "IMT 2026 tables: https://www.pwc.pt/pt/pwcinforfisco/guia-fiscal/2026/imt.html"
+  - "IMT 2026 young buyers: https://www.doutorfinancas.pt/impostos/escaloes-do-imt-sobem-2-em-2026-e-jovens-ficam-isentos-ate-330-539-euros/"
+  - "IFICI: https://www.pwc.pt/pt/pwcinforfisco/guia-fiscal/2026/irs.html"
+
+reference_values:
+  ias: 537.13                 # Indexante dos Apoios Sociais 2026
+  minimum_wage_monthly: 920   # Retribuição mínima mensal garantida 2026
+  salary_payments_per_year: 14
+
+income_tax:
+  name: IRS (Imposto sobre o Rendimento das Pessoas Singulares)
+  # [upper limit of taxable income, marginal rate]; null = no upper limit.
+  brackets:
+    - [8342, 0.125]
+    - [12587, 0.157]
+    - [17838, 0.212]
+    - [23089, 0.241]
+    - [29397, 0.311]
+    - [43090, 0.349]
+    - [46566, 0.431]
+    - [86634, 0.446]
+    - [null, 0.48]
+  # Taxa adicional de solidariedade: [from, to, rate]
+  solidarity_surcharge:
+    - [80000, 250000, 0.025]
+    - [250000, null, 0.05]
+  joint_filing_divisor: 2            # quociente conjugal
+  minimum_income: 12880              # mínimo de existência: tax may not leave income below this
+  employment:
+    specific_deduction: 4587.09      # dedução específica (or social security paid, if higher)
+    employee_social_security_rate: 0.11
+    employer_social_security_rate: 0.2375
+  self_employment:
+    # Simplified regime: share of gross income that is taxable.
+    simplified_regime_coefficients:
+      professional_services: 0.75    # activities listed in art. 151 CIRS
+      other_services: 0.35
+      sales_and_hospitality: 0.15
+    social_security_rate: 0.214
+    social_security_relevant_income_share: 0.70
+  deductions:                        # deduções à coleta
+    dependant: 600
+    dependant_aged_3_or_less: 726
+    dependant_aged_6_or_less_from_second: 900
+    general_family: {rate: 0.35, cap: 250, single_parent_rate: 0.45, single_parent_cap: 335}
+    health: {rate: 0.15, cap: 1000}
+    education: {rate: 0.30, cap: 800}
+    rent: {rate: 0.15, cap: 900}     # permanent-home rent, contracts registered with the AT
+    vat_invoices: {rate: 0.15, cap: 250}   # 15% of VAT on restaurants, hairdressers, car repairs, vets, gyms (e-fatura)
+    retirement_savings:              # PPR, 20% of contributions, cap by age on 1 January
+      rate: 0.20
+      caps_by_age: [[34, 400], [50, 350], [null, 300]]
+    # Global cap on the capped categories, by taxable income.
+    global_cap:
+      categories: [health, education, rent, vat_invoices, retirement_savings]
+      max: 2500
+      min: 1000
+      no_cap_below: 8342
+      lower_income: 8342
+      upper_income: 86634
+      increase_per_dependant_from_three: 0.05
+  young_people_regime:               # IRS Jovem
+    name: IRS Jovem
+    max_age: 35
+    years: 10
+    annual_exempt_cap: 29542.15      # 55 x IAS
+    exempt_share_by_year: {1: 1.0, 2: 0.75, 3: 0.75, 4: 0.75, 5: 0.5, 6: 0.5, 7: 0.5, 8: 0.25, 9: 0.25, 10: 0.25}
+  special_regimes:
+    ifici:
+      name: IFICI (successor to the NHR regime)
+      flat_rate: 0.20
+      years: 10
+      note: >-
+        20% flat rate on eligible Portuguese employment/self-employment income from qualifying
+        activities; most foreign income exempt. Eligibility is strict: confirm before relying on it.
+  filing:
+    window: "1 April to 30 June of the following year"
+    notes:
+      - "Validate e-fatura invoices and household composition in February."
+      - "PPR contributions count for the year in which they are made (deadline 31 December)."
+      - "Compare joint vs separate filing in the Portal das Finanças simulator every year."
+
+capital_income:
+  flat_rate: 0.28                    # interest, dividends, capital gains (taxa liberatória / especial)
+  blacklisted_jurisdiction_rate: 0.35
+  aggregation_optional: true         # opção pelo englobamento
+  crypto_exempt_after_days: 365
+  real_estate_gain_taxable_share: 0.5
+  notes:
+    - "Accumulating funds defer tax until sale; distributing funds are taxed on each distribution."
+    - "Losses on securities can offset gains in the same and following 5 years when aggregation is chosen."
+    - "Gains on the sale of a permanent home can be exempt if reinvested in another permanent home (rules apply)."
+
+property:
+  transfer_tax:                      # IMT, mainland, 2026
+    name: IMT
+    permanent_home:
+      marginal:                      # [upper limit, rate]
+        - [106346, 0.0]
+        - [145470, 0.02]
+        - [198347, 0.05]
+        - [330539, 0.07]
+        - [660982, 0.08]
+      flat:                          # [upper limit, rate applied to the whole value]
+        - [1150853, 0.06]
+        - [null, 0.075]
+    other_home:
+      marginal:
+        - [106346, 0.01]
+        - [145470, 0.02]
+        - [198347, 0.05]
+        - [330539, 0.07]
+        - [633931, 0.08]
+      flat:
+        - [1150853, 0.06]
+        - [null, 0.075]
+    other_urban_property_rate: 0.065
+    rustic_property_rate: 0.05
+    young_buyer:                     # IMT Jovem: first permanent home, aged 35 or under
+      max_age: 35
+      fully_exempt_up_to: 330539
+      partial_relief_up_to: 660982   # between the two, only the part above the exempt limit is taxed (8%)
+      partial_rate: 0.08
+  stamp_duty_purchase_rate: 0.008    # Imposto do Selo on the price (young-buyer exemption mirrors IMT)
+  stamp_duty_mortgage_rate: 0.006    # loans of 5 years or more
+  annual_property_tax:
+    name: IMI
+    urban_rate_range: [0.003, 0.0045]
+    note: "Set by each municipality on the property's tax value (VPT)."
+
+banking:
+  max_debt_service_to_income: 0.50   # Banco de Portugal macroprudential limit for new credit
+  early_repayment:
+    consumer_credit_fee_over_1_year_left: 0.005
+    consumer_credit_fee_up_to_1_year_left: 0.0025
+    consumer_credit_notice_days: 30
+    mortgage_variable_rate_fee: 0.005
+    mortgage_fixed_rate_fee: 0.02
+    note: "Temporary fee waivers have applied to variable-rate mortgages; check your contract and current law."
+
+salary:
+  payments_per_year: 14
+  extra_payments:
+    - "Holiday subsidy (subsídio de férias), usually paid around June/July"
+    - "Christmas subsidy (subsídio de Natal), usually paid in November/December"
+  note: "Some employers pay the subsidies in twelfths (duodécimos) spread over the monthly salary."
+
+retirement:
+  state_pension_note: >-
+    Request a pension simulation and the contribution record (carreira contributiva) in
+    Segurança Social Direta. Treat state pension figures as uncertain decades ahead.
+
+# Ordered list of options for spare money. Used by the investment_options tool.
+investment_options:
+  - id: high_interest_debt
+    name: Paying off high-interest debt
+    stage: first
+    risk: 0
+    liquidity: none
+    expected_return: "The loan's interest rate, guaranteed"
+    tax: "None: it is interest you don't pay"
+    when_it_fits: "Any debt above ~5-6% a year (credit cards, personal and car loans) beats every safe investment."
+    watch_out: "Check early-repayment fees and notice periods; keep a minimal cash cushion first."
+  - id: emergency_fund
+    name: "Emergency fund: Certificados de Aforro / savings deposits"
+    stage: first
+    risk: 1
+    liquidity: "High (Certificados de Aforro: redeemable after 3 months)"
+    expected_return: "Low; Certificados de Aforro follow the 3-month Euribor within a cap. Check the current series rate."
+    tax: "28% withheld on interest"
+    when_it_fits: "Before any investing: typically 3-6 months of essential costs, more with variable income or dependants."
+    watch_out: "Keep about one month of costs in the current account; the rest can earn interest."
+  - id: retirement_savings_plan
+    name: PPR (Plano Poupança Reforma)
+    stage: when_tax_is_due
+    risk: 3
+    liquidity: "Low: early redemption loses the tax benefit"
+    expected_return: "Depends on the fund (prefer low-fee, equity-heavy) plus the tax deduction"
+    tax: "20% of contributions deductible (cap 400/350/300 EUR by age); reduced tax on redemption under legal conditions"
+    when_it_fits: "Only when your IRS assessment shows tax actually due and the global deduction cap isn't already used."
+    watch_out: "Worth nothing as a tax benefit while your IRS tax is 0. Compare fund fees."
+  - id: global_equity_etf
+    name: "Global equity ETF (UCITS, accumulating)"
+    stage: core
+    risk: 4
+    liquidity: "High: sell any trading day"
+    expected_return: "Long-term assumption ~5-7% a year nominal, with bad years"
+    tax: "28% on gains when sold; accumulating funds defer tax"
+    when_it_fits: "The core of long-term investing once debts are handled and the emergency fund is full. Buy monthly."
+    watch_out: "Money needed within ~5 years shouldn't be in shares. Choose low TER (~0.1-0.25%)."
+  - id: state_savings_bonds
+    name: Certificados do Tesouro
+    stage: optional
+    risk: 1
+    liquidity: "Low: meant to be held for years"
+    expected_return: "Modest, rising over the term"
+    tax: "28% on interest"
+    when_it_fits: "Long-horizon money you want guaranteed, outside shares."
+    watch_out: "Penalties/lower returns for early exit."
+  - id: bonds_and_deposits
+    name: Bond ETFs / term deposits
+    stage: later
+    risk: 2
+    liquidity: High
+    expected_return: "Roughly in line with interest rates"
+    tax: "28% on interest and gains"
+    when_it_fits: "A stabiliser as a goal date approaches (house deposit, retirement)."
+    watch_out: "Not needed early in a long horizon."
+  - id: crypto
+    name: Crypto-assets
+    stage: small_only
+    risk: 5
+    liquidity: High
+    expected_return: Unpredictable
+    tax: "Gains exempt if held 365 days or more; 28% if sold sooner"
+    when_it_fits: "Only money you can afford to lose, at most ~5% of investments."
+    watch_out: "No underlying cash flow; scams and exchange risk."
+  - id: individual_shares
+    name: Individual shares
+    stage: avoid
+    risk: 5
+    liquidity: High
+    expected_return: Unpredictable
+    tax: "28% on gains and dividends"
+    when_it_fits: "Rarely: more risk and effort than an index fund for a worse average result."
+    watch_out: "Concentration risk."
+  - id: prepay_cheap_mortgage
+    name: Prepaying a low-rate or subsidised mortgage
+    stage: depends
+    risk: 0
+    liquidity: none
+    expected_return: "The mortgage rate (often low)"
+    tax: "None"
+    when_it_fits: "Only when the rate exceeds what safe savings earn after tax, or for peace of mind once everything else is done."
+    watch_out: "Never prepay a subsidised loan; check fees; liquidity is lost."
+  - id: rental_property
+    name: Buying property to rent out
+    stage: later
+    risk: 4
+    liquidity: "Very low"
+    expected_return: "Rent minus costs, IMI, vacancies and maintenance"
+    tax: "Rental income at a special autonomous rate (lower for long contracts) or aggregated"
+    when_it_fits: "With substantial capital, stable finances and appetite for landlord work."
+    watch_out: "Leverage, concentration, transaction costs (IMT, stamp duty)."
+  - id: more_income
+    name: Increasing income
+    stage: anytime
+    risk: 1
+    liquidity: "-"
+    expected_return: "Usually the strongest lever"
+    tax: "Taxed as normal income (IRS Jovem may cover employment and self-employment income)"
+    when_it_fits: "Always worth considering: salary review, extra hours, side work (check contract exclusivity)."
+    watch_out: "Self-employment brings social security and invoicing obligations."
+  - id: avoid_high_risk_products
+    name: "P2P lending, CFDs, leveraged or 'guaranteed high return' products"
+    stage: avoid
+    risk: 5
+    liquidity: Varies
+    expected_return: "Advertised high, often lost"
+    tax: Varies
+    when_it_fits: Never for core finances.
+    watch_out: "If it sounds too good to be true, it is."
+
+# Documents the intake asks for. `domains` decides when a document matters for the user's goals.
+documents:
+  - id: payslips
+    name: Payslips (last 3 months)
+    local_name: Recibos de vencimento
+    where: "Your employer's HR/payroll portal"
+    why: "Exact gross pay, deductions, withholding and benefits (meal allowance, flex, on-call)."
+    domains: [tax, cashflow, property]
+    essential_for: [tax, cashflow]
+    facts_question: "Your gross monthly salary and how many payments a year (usually 14)?"
+    keywords: [recibo de vencimento, payslip, vencimento base, remuneração, retenção na fonte, salário base]
+  - id: irs_return
+    name: Last IRS return and tax assessment
+    local_name: Declaração de IRS (Modelo 3) e nota de liquidação
+    where: "Portal das Finanças > IRS > Consultar declaração / Obter comprovativos"
+    why: "Your real taxable income, deductions used, tax paid and refund: the base for any tax plan."
+    domains: [tax, property, wealth]
+    essential_for: [tax]
+    facts_question: "Last year's IRS result (refund or amount paid) and whether you filed jointly?"
+    keywords: [modelo 3, nota de liquidação, demonstração de liquidação, rendimento coletável, coleta líquida, valor a reembolsar]
+  - id: efatura_deductions
+    name: e-fatura deductible expenses summary
+    local_name: Despesas dedutíveis (e-fatura)
+    where: "Portal das Finanças > e-fatura > Consumidor > Despesas dedutíveis em IRS"
+    why: "Shows how much of each deduction (health, education, general, VAT) you're already getting."
+    domains: [tax]
+    essential_for: [tax]
+    facts_question: "Roughly how much you spend a year on health, education and rent?"
+    keywords: [e-fatura, despesas gerais familiares, despesas dedutíveis, exigência de fatura]
+  - id: bank_statements
+    name: Bank statements (3-12 months, CSV export if possible)
+    local_name: Extratos bancários
+    where: "Homebanking > Movimentos > Exportar (CSV or Excel)"
+    why: "Shows where the money actually goes: spending by category, subscriptions, recurring bills."
+    domains: [cashflow, debt, wealth]
+    essential_for: [cashflow]
+    facts_question: "Your average monthly spending, and fixed bills (rent/mortgage, utilities, subscriptions)?"
+    keywords: [extrato, movimentos, saldo contabilístico, saldo disponível, descritivo, data valor, data mov]
+  - id: credit_map
+    name: Credit responsibility map (Banco de Portugal)
+    local_name: Mapa de Responsabilidades de Crédito
+    where: "Banco de Portugal > Portal do Cliente Bancário (login with Portal das Finanças credentials)"
+    why: "Lists every loan, card and guarantee in your name, so no debt is missed."
+    domains: [debt, property]
+    essential_for: [debt]
+    facts_question: "Your debts: for each, the balance, interest rate and monthly payment?"
+    keywords: [responsabilidades de crédito, central de responsabilidades, montante em dívida, banco de portugal]
+  - id: loan_contracts
+    name: Loan contracts or statements (mortgage, personal, car)
+    local_name: Contratos / FINE / extratos de crédito
+    where: "Your bank or lender's app, or the FINE you signed"
+    why: "Rate type (fixed/variable, spread, Euribor), remaining term and early-repayment terms."
+    domains: [debt, property]
+    essential_for: [debt]
+    facts_question: "For each loan: rate (fixed or variable + spread), remaining term, any subsidy?"
+    keywords: [TAN, TAEG, spread, euribor, prestação, ficha de informação normalizada, crédito habitação, amortização]
+  - id: credit_cards
+    name: Credit card statements
+    local_name: Extratos de cartão de crédito
+    where: "Card issuer's app or website"
+    why: "Balances, interest rate and minimum-payment settings, usually the most expensive debt."
+    domains: [debt, cashflow]
+    essential_for: [debt]
+    facts_question: "Card balances, interest rates (TAEG) and the monthly payment you make?"
+    keywords: [cartão de crédito, pagamento mínimo, limite de crédito, extrato do cartão]
+  - id: savings_investments
+    name: Savings and investment statements
+    local_name: Depósitos, Certificados de Aforro/Tesouro, PPR, corretora
+    where: "Bank app; AforroNet (IGCP) for Certificados; broker and PPR provider statements"
+    why: "What you already own, where, at what cost, and how it's taxed."
+    domains: [wealth, retirement, tax]
+    essential_for: [wealth, retirement]
+    facts_question: "What savings/investments you have and roughly how much in each?"
+    keywords: [certificados de aforro, aforronet, certificados do tesouro, ppr, carteira, corretora, etf, fundo de investimento, depósito a prazo]
+  - id: crypto
+    name: Crypto exchange history
+    local_name: Histórico de cripto-ativos
+    where: "Exchange export (CSV)"
+    why: "Holding periods decide whether gains are taxed (365-day rule)."
+    domains: [wealth, tax]
+    essential_for: []
+    facts_question: "Any crypto held, roughly how much and since when?"
+    keywords: [bitcoin, ethereum, binance, coinbase, kraken, cripto]
+  - id: property
+    name: Property documents
+    local_name: Caderneta predial, nota de IMI
+    where: "Portal das Finanças > Imóveis > Consultar património / IMI"
+    why: "Tax value (VPT), IMI due and ownership: needed for housing and wealth decisions."
+    domains: [property, wealth, tax]
+    essential_for: [property]
+    facts_question: "Property you own: estimated value, IMI per year, outstanding mortgage?"
+    keywords: [caderneta predial, valor patrimonial tributário, VPT, IMI, artigo matricial]
+  - id: rental_contract
+    name: Rental contract (as tenant or landlord)
+    local_name: Contrato de arrendamento
+    where: "Your copy, or Portal das Finanças > Arrendamento"
+    why: "Rent deductions for tenants; rental income tax for landlords."
+    domains: [tax, cashflow, property]
+    essential_for: []
+    facts_question: "Monthly rent paid or received, and whether the contract is registered with the AT?"
+    keywords: [contrato de arrendamento, senhorio, arrendatário, renda mensal]
+  - id: insurance
+    name: Insurance policies (life, health, home, car)
+    local_name: Apólices de seguro
+    where: "Insurer's app or your bank (life insurance linked to a mortgage)"
+    why: "Checks you're protected against the big risks and not overpaying; yearly premiums affect cash flow."
+    domains: [protection, cashflow, property]
+    essential_for: [protection]
+    facts_question: "Which insurances you have, yearly premiums and renewal months?"
+    keywords: [apólice, seguro, prémio anual, capital seguro, tomador, seguradora]
+  - id: social_security
+    name: Social security record and pension simulation
+    local_name: Carreira contributiva e simulação de pensão
+    where: "Segurança Social Direta > Pensões > Simulação / Carreira contributiva"
+    why: "The starting point for any retirement plan."
+    domains: [retirement]
+    essential_for: [retirement]
+    facts_question: "Years of contributions so far and the estimated pension, if you know it?"
+    keywords: [segurança social, carreira contributiva, simulação de pensão, registo de remunerações]
+  - id: self_employment
+    name: Self-employment records
+    local_name: Recibos verdes / faturas-recibo, regime de IVA
+    where: "Portal das Finanças > Faturas e Recibos; Segurança Social Direta"
+    why: "Category B income, social security contributions and the simplified regime coefficients."
+    domains: [tax, cashflow]
+    essential_for: []
+    facts_question: "Self-employed income per year and type of activity?"
+    keywords: [fatura-recibo, recibo verde, categoria b, trabalhador independente, declaração trimestral]
+  - id: employment_benefits
+    name: Employment benefits
+    local_name: Plano flex, subsídio de alimentação, prémios
+    where: "HR portal / employment contract"
+    why: "Tax-efficient benefits (e.g. PPR or health insurance via a flex plan) and bonus timing."
+    domains: [tax, cashflow, wealth]
+    essential_for: []
+    facts_question: "Any bonus, meal card, flex plan or company health insurance?"
+    keywords: [plano flex, flexível, cartão refeição, subsídio de alimentação, prémio de desempenho]
+
+# Keyword rules for categorising bank transactions (lower-case, matched on the description).
+transaction_categories:
+  income: [vencimento, salario, salário, ordenado, remuneração, reembolso irs, reembolso at, transf recebida, subsidio, subsídio]
+  housing: [renda, condominio, condomínio, prestacao habitacao, prestação habitação, credito habitacao, crédito habitação]
+  utilities: [edp, endesa, iberdrola, goldenergy, galp energia, agua, água, smas, epal, vodafone, meo, nos comunicacoes, nos sgps, digi, nowo]
+  groceries: [continente, pingo doce, lidl, aldi, intermarche, intermarché, mercadona, minipreco, minipreço, auchan, spar, supermercado]
+  transport: [galp, bp , repsol, prio, cepsa, via verde, uber, bolt, cp-comboios, comboios, metro, carris, passe, portagem]
+  eating_out: [restaurante, uber eats, glovo, bolt food, pastelaria, cafe, café, mcdonald, burger king, telepizza]
+  health: [farmacia, farmácia, clinica, clínica, hospital, cuf, luz saude, luz saúde, lusiadas, lusíadas, multicare, medis, médis, dentista]
+  subscriptions: [netflix, spotify, disney, hbo, max.com, amazon prime, apple.com, google, youtube, openai, chatgpt, anthropic, claude]
+  insurance: [seguro, fidelidade, ageas, allianz, generali, tranquilidade, zurich, lusitania, liberty seguros, mapfre]
+  debt_payments: [prestacao, prestação, cofidis, cetelem, credibom, oney, unibanco, wizink, universo, pagamento cartao, pagamento cartão]
+  bank_fees: [comissao, comissão, manutencao conta, manutenção de conta, imposto selo, imp selo, anuidade]
+  shopping: [amazon, worten, fnac, ikea, zara, primark, decathlon, el corte ingles, el corte inglés, shein, aliexpress]
+  education: [escola, propinas, universidade, colegio, colégio, creche, explicações]
+  cash: [levantamento, atm, multibanco lev]
+  transfers: [mb way, mbway, transferencia, transferência, trf]
+  taxes: [autoridade tributaria, autoridade tributária, at - , imi, iuc, seg social, segurança social]
+
+calendar:
+  - "January-February: check e-fatura invoices and household composition for last year's IRS."
+  - "April-June: file IRS (1 April - 30 June); compare joint vs separate filing."
+  - "May (plus August/November if split): IMI payments."
+  - "Month of car registration: IUC (car tax)."
+  - "Before 31 December: PPR contributions to count for this year's deduction."

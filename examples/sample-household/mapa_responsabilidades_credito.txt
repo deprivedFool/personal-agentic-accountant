@@ -1,0 +1,7 @@
+BANCO DE PORTUGAL - Mapa de Responsabilidades de Crédito (Central de Responsabilidades de Crédito)
+Mês de referência: 08/2026      Titular: Ana Exemplo   NIF 123456789
+
+Instituição        Produto                     Montante em dívida   Prestação   Taxa
+Banco Exemplo      Crédito habitação           182.000,00 EUR       790,00      Euribor 6M + 1,00% (TAN ~3,1%)
+CrediExemplo       Crédito automóvel             9.400,00 EUR       240,00      TAN 8,9% fixa (TAEG 10,2%)
+Banco Exemplo      Cartão de crédito             1.850,00 EUR        60,00      TAN 15,9% (TAEG 18,1%)

@@ -1,0 +1,12 @@
+RECIBO DE VENCIMENTO - Setembro 2026
+Empresa Exemplo, Lda.            NIF empresa: 500000000
+Trabalhador: Ana Exemplo         NIF: 123456789     NISS: 12345678901
+IBAN: PT50 0000 0000 0000 0000 0000 0
+
+Vencimento base ............................ 2.100,00
+Subsídio de alimentação (cartão) 22 x 10,20 .. 224,40
+Segurança Social (11%) ..................... -231,00
+Retenção na fonte IRS ...................... -287,00
+Líquido a receber .......................... 1.582,00
+
+Nota: subsídios de férias e de Natal pagos em junho e novembro (14 pagamentos/ano).

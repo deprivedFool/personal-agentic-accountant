@@ -1,0 +1,93 @@
+# Fallback pack for countries without a dedicated pack.
+# Tax tools report that exact tables are unavailable; everything else works normally.
+
+country: Generic
+code: generic
+currency: ""
+tax_year: null
+verified: null
+disclaimer: >-
+  No tax tables are available for this country yet, so tax figures are indicative only.
+  Confirm tax questions with the local tax authority or a qualified adviser.
+sources: []
+
+investment_options:
+  - id: high_interest_debt
+    name: Paying off high-interest debt
+    stage: first
+    risk: 0
+    liquidity: none
+    expected_return: "The loan's interest rate, guaranteed"
+    tax: "None: it is interest you don't pay"
+    when_it_fits: "Any debt costing more than safe savings earn after tax."
+    watch_out: "Check early-repayment fees; keep a minimal cash cushion first."
+  - id: emergency_fund
+    name: Emergency fund in safe, liquid savings
+    stage: first
+    risk: 1
+    liquidity: High
+    expected_return: Low
+    tax: "Interest is usually taxable"
+    when_it_fits: "Before investing: 3-6 months of essential costs, more with variable income or dependants."
+    watch_out: "Keep it separate from spending money."
+  - id: tax_advantaged_retirement
+    name: Tax-advantaged retirement accounts
+    stage: core
+    risk: 3
+    liquidity: Low
+    expected_return: "Depends on the investments inside"
+    tax: "Country-specific incentives"
+    when_it_fits: "When the tax incentive is real for your situation (e.g. you actually pay income tax)."
+    watch_out: "Early-withdrawal penalties; fees."
+  - id: global_equity_index_fund
+    name: Global equity index fund (low cost)
+    stage: core
+    risk: 4
+    liquidity: High
+    expected_return: "Long-term assumption ~5-7% a year nominal, with bad years"
+    tax: "Usually taxed on gains/dividends"
+    when_it_fits: "Long-term money once debts and the emergency fund are handled."
+    watch_out: "Not for money needed within ~5 years."
+  - id: bonds_and_deposits
+    name: Bonds / term deposits
+    stage: later
+    risk: 2
+    liquidity: High
+    expected_return: "Roughly in line with interest rates"
+    tax: "Interest usually taxable"
+    when_it_fits: "As a goal date approaches."
+    watch_out: "Inflation can erode real value."
+  - id: avoid_high_risk_products
+    name: "Leveraged, CFD or 'guaranteed high return' products"
+    stage: avoid
+    risk: 5
+    liquidity: Varies
+    expected_return: "Advertised high, often lost"
+    tax: Varies
+    when_it_fits: Never for core finances.
+    watch_out: "If it sounds too good to be true, it is."
+
+documents:
+  - {id: payslips, name: Payslips (last 3 months), local_name: "", where: "Employer payroll portal", why: "Exact pay, deductions and benefits.", domains: [tax, cashflow, property], essential_for: [tax, cashflow], facts_question: "Your gross monthly salary and payments per year?", keywords: [payslip, pay slip, gross pay, net pay, salary]}
+  - {id: tax_return, name: Last tax return and assessment, local_name: "", where: "Your tax authority's online portal", why: "Your real taxable income, deductions and tax paid.", domains: [tax, property, wealth], essential_for: [tax], facts_question: "Last year's tax result (refund or amount paid)?", keywords: [tax return, assessment, taxable income]}
+  - {id: bank_statements, name: "Bank statements (3-12 months, CSV if possible)", local_name: "", where: "Online banking export", why: "Where the money actually goes.", domains: [cashflow, debt, wealth], essential_for: [cashflow], facts_question: "Average monthly spending and fixed bills?", keywords: [statement, balance, transactions]}
+  - {id: debts, name: Debt statements (loans, cards), local_name: "", where: "Lender apps or statements", why: "Balances, rates and payments for every debt.", domains: [debt, property], essential_for: [debt], facts_question: "Each debt's balance, interest rate and monthly payment?", keywords: [loan, mortgage, credit card, apr, interest rate, outstanding]}
+  - {id: savings_investments, name: Savings and investment statements, local_name: "", where: "Bank/broker/pension provider", why: "What you own, costs and tax treatment.", domains: [wealth, retirement, tax], essential_for: [wealth, retirement], facts_question: "Savings/investments held and roughly how much?", keywords: [portfolio, brokerage, fund, pension, savings account]}
+  - {id: property, name: Property documents, local_name: "", where: "Land registry / property tax bill", why: "Value, property tax and ownership.", domains: [property, wealth], essential_for: [property], facts_question: "Property owned: value, yearly property tax, mortgage left?", keywords: [deed, property tax, land registry]}
+  - {id: insurance, name: Insurance policies, local_name: "", where: "Insurer apps", why: "Protection against big risks; premiums.", domains: [protection, cashflow], essential_for: [protection], facts_question: "Insurances held, yearly premiums and renewal months?", keywords: [policy, premium, insurer, coverage]}
+  - {id: pension_record, name: State pension record or forecast, local_name: "", where: "Social security portal", why: "Starting point for retirement planning.", domains: [retirement], essential_for: [retirement], facts_question: "Estimated state pension, if known?", keywords: [pension forecast, social security, contributions record]}
+
+transaction_categories:
+  income: [salary, payroll, wages, refund]
+  housing: [rent, mortgage]
+  groceries: [supermarket, grocery]
+  transport: [fuel, petrol, uber, bolt, train, metro, toll]
+  eating_out: [restaurant, cafe, uber eats, deliveroo, just eat]
+  health: [pharmacy, clinic, hospital, dentist]
+  subscriptions: [netflix, spotify, disney, apple.com, google, youtube, openai, anthropic]
+  insurance: [insurance]
+  bank_fees: [fee, commission]
+  cash: [atm, cash withdrawal]
+  transfers: [transfer]
+
+calendar: []

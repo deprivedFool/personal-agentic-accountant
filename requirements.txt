@@ -1,0 +1,5 @@
+pyyaml>=6.0
+# Optional, recommended:
+litellm>=1.40      # real models (Anthropic, OpenAI, local via Ollama)
+pypdf>=4.0         # read PDF documents
+openpyxl>=3.1      # read Excel documents
